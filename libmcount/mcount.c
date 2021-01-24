@@ -1165,7 +1165,7 @@ void mcount_exit_filter_record(struct mcount_thread_data *mtdp, struct mcount_re
 			mtdp->record_idx--;
 
 		if (!mcount_enabled)
-			return;
+			goto out;
 
 		if (!(rstack->flags & MCOUNT_FL_RETVAL))
 			retval = NULL;
@@ -1209,6 +1209,7 @@ void mcount_exit_filter_record(struct mcount_thread_data *mtdp, struct mcount_re
 				mtdp->nr_events = k; /* invalidate sync events */
 		}
 
+out:
 		/* script hooking for function exit */
 		if (SCRIPT_ENABLED && script_str)
 			script_hook_exit(mtdp, rstack);
@@ -1799,6 +1800,8 @@ static void mcount_script_init(enum uftrace_pattern_type patt_type)
 
 	if (script_init(&info, patt_type) < 0)
 		script_str = NULL;
+	else if (!info.record)
+		mcount_enabled = false;
 }
 
 static __used void mcount_startup(void)
